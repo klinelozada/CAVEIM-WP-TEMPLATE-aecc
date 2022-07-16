@@ -1,0 +1,146 @@
+<?php
+/**
+ * Template part for displaying page content in page.php
+ *
+ * @link https://developer.wordpress.org/themes/basics/template-hierarchy/
+ *
+ * @package aecc
+ */
+
+?>
+    <link href="<?php echo get_template_directory_uri(); ?>/app-doc.css" rel="stylesheet">
+
+    <?php if(is_front_page()): ?>
+
+        <!-- Front Page -->
+        <div class="container-fluid">
+
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="aecc-content">
+                        <h1 class="mt-4"><?php the_title(); ?></h1>
+                        <?php the_content(); ?>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="aecc-main-menu">
+                    <?php
+                        wp_nav_menu(
+                            array(
+                                'theme_location' 	=> 'aecc-homepage-menu',
+                                'menu_id'        	=> 'primary-menu',
+                                'menu_class'		=> '',
+                            )
+                        );
+                    ?>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    <?php else: ?>    
+
+        <!-- Normal Page -->
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="aecc-content">
+                        <h1 class="mt-4"><?php the_title(); ?></h1>
+                        <?php the_content(); ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!--  -->
+        <div class="container-fluid">
+
+        <?php
+
+            // Get the slug to identify
+            global $post;
+            $post_slug = $post->post_name;
+
+            $terms = get_terms( array( 
+                'taxonomy' => 'document-type',
+                'parent'   => 0
+            ) );
+        ?>
+        <div class="row">
+        <div class="col-lg-8 col-md-12 col-sm-12">
+
+        <?php
+            foreach($terms as $term):
+                $term_name = $term->name;
+                $term_slug = $term->slug;
+
+                $aecc_documents = aecc_get_posts_from_categories($term->term_id);
+
+        ?>
+            <!-- If the page has some documents -->
+            <?php if($term_slug == $post_slug): ?>
+                <div class="row aecc-document-body">
+                <h4 class="aecc-title"><?php print_r($term_name); ?></h4>
+                    <?php
+                        // Get all documents
+                        foreach($aecc_documents as $aecc_document):
+                            echo do_shortcode(aecc_show_docs_content( $term_slug, $aecc_document->ID));
+                        endforeach; //$aecc_documents
+                    ?>
+                </div>
+
+            <!-- Exclusive only for brand-graphics-images -->
+            <?php elseif($post_slug == 'brand-graphics-images'): ?>
+
+                <?php $show_only = array('logos','maps','powerpoint-templates'); ?>
+
+                
+                <?php foreach($show_only as $acats): if($term_slug === $acats): ?>
+
+                    <div class="row aecc-document-body">
+                    <h4 class="aecc-title"><?php print_r($term_name); ?></h4>
+
+                <?php endif; endforeach; ?>
+
+                    <?php foreach($aecc_documents as $aecc_document):
+                            foreach($show_only as $acats):
+                                if($term_slug === $acats):
+                                    echo do_shortcode(aecc_show_docs_content( $term_slug, $aecc_document->ID));    
+                                endif;
+                            endforeach;
+                            // echo do_shortcode(aecc_show_docs_content( $term_slug, $aecc_document->ID));
+                        endforeach; //$aecc_documents
+                    ?>
+                    
+                <?php foreach($show_only as $acats): if($term_slug === $acats): ?>
+                    </div>
+                <?php endif; endforeach; ?>
+
+            <?php else:?>
+
+            <?php endif; ?>
+
+        <?php endforeach; // $terms ?>
+
+        </div><!-- .col-md-8 -->
+
+        <div class="col-lg-4 col-md-12 col-sm-12">
+            Sidebar
+        </div>
+
+        </div><!-- .row -->
+        </div>
+
+        <script>
+        jQuery(document).ready(function($) {
+            var width = $(window).width();
+            var height = $(window).height();
+            $('.lightbox .ead-iframe').css('cssText','height:100%!important;min-height:'+height+'px!important;');
+        });
+        </script>
+
+    <?php endif;?>
